@@ -2,7 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"github.com/mttsner/luac"
+	lua "github.com/yuin/gopher-lua"
 	"log"
 	"os"
 )
@@ -88,6 +89,18 @@ func CreateHeader(meta *Metadata) []byte {
 	return header
 }
 
+func CompileLua(source string) ([]byte, error) {
+	L := lua.NewState()
+	defer L.Close()
+
+	lfunc, err := L.LoadString(source)
+	if err != nil {
+		return nil, err
+	}
+
+	return luac.DumpLua(lfunc.Proto), nil
+}
+
 func main() {
 	meta, err := ParseJSON()
 	if err != nil {
@@ -95,4 +108,27 @@ func main() {
 	}
 
 	output := CreateHeader(meta)
+
+	data, err := os.ReadFile("main.lua")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	luaBytecode, err := CompileLua(string(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output = append(output, luaBytecode...)
+
+	var fileName string
+	if meta.Core {
+		fileName = meta.Id + ".sece"
+	} else {
+		fileName = meta.Id + ".see"
+	}
+
+	if err = os.WriteFile(fileName, output, 0644); err != nil {
+		log.Fatal(err)
+	}
 }

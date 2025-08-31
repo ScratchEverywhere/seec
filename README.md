@@ -7,4 +7,4 @@ More info coming soon.
 - [x] Parse `meta.json`
 - [x] Create Header (part before lua bytecode)
 - [ ] Parse Command Line Arguments
-- [ ] Compile Lua into bytecode
+- [x] Compile Lua into bytecode

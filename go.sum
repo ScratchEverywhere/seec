@@ -1,0 +1,4 @@
+github.com/mttsner/luac v0.0.0-20201216153055-6894cbd79850 h1:vfQt352Fpj+DfpoyL2wj21azKPwYvLSBovqG0tNNxJU=
+github.com/mttsner/luac v0.0.0-20201216153055-6894cbd79850/go.mod h1:rlCQn+yBPW1GClP/mEIoDkY+KDFEwL2hJd6yduGNvG0=
+github.com/yuin/gopher-lua v1.1.1 h1:kYKnWBjvbNP4XLT3+bPEwAXJx262OhaHDWDVOPjL46M=
+github.com/yuin/gopher-lua v1.1.1/go.mod h1:GBR0iDaNXjAgGg9zfCvksxSRnQx76gclCIb7kdAd1Pw=
