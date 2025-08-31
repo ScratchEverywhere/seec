@@ -12,8 +12,8 @@ needed by the extension. Followed by the Lua bytecode of the extension.
 # SECE (Scratch Everywhere! Core Extension)
 
 `.sece` files start with the magic string `SE! CORE.EXT` (not null-terminated.)
-The magic string is followed by a null-terminated string representing the ID of
-the extension. The ID is followed by a null-terminated representing the
+The magic string is followed by a null-terminated string representing the name
+of the extension. The name is followed by a null-terminated representing the
 description of the extension. The next byte is used to figure out the
 permissions needed by the extension. Followed by the Lua bytecode of the
 extension.
