@@ -4,6 +4,7 @@ More info coming soon.
 
 ## Todo List
 
-- Parse `meta.json`
-- Parse Command Line Arguments
-- Compile Lua into bytecode
+- [x] Parse `meta.json`
+- [ ] Create Header (part before lua bytecode)
+- [ ] Parse Command Line Arguments
+- [ ] Compile Lua into bytecode
