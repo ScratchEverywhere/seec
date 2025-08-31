@@ -11,6 +11,6 @@
     "render": false,
     "update": false,
     "platform-specific": false,
-    "": false
+    "runtime": false
   }
 }
