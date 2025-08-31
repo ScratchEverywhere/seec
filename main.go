@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/mttsner/luac"
 	lua "github.com/yuin/gopher-lua"
 	"log"
 	"os"
@@ -98,7 +97,7 @@ func CompileLua(source string) ([]byte, error) {
 		return nil, err
 	}
 
-	return luac.DumpLua(lfunc.Proto), nil
+	return DumpLua(lfunc.Proto), nil
 }
 
 func main() {
