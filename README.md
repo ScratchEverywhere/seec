@@ -8,3 +8,4 @@ More info coming soon.
 - [x] Create Header (part before lua bytecode)
 - [ ] Parse Command Line Arguments
 - [x] Compile Lua into bytecode
+- [ ] Generate JS dummy extension from source code
