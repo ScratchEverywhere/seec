@@ -39,11 +39,60 @@ func ParseJSON() (*Metadata, error) {
 	return &meta, nil
 }
 
+func ProcessPermissions(perms Permissions) byte {
+	ret := byte(0)
+
+	if perms.LocalFS {
+		ret |= 0b00000001
+	}
+	if perms.RootFS {
+		ret |= 0b00000010
+	}
+	if perms.Network {
+		ret |= 0b00000100
+	}
+	if perms.Input {
+		ret |= 0b00001000
+	}
+	if perms.Render {
+		ret |= 0b00010000
+	}
+	if perms.Update {
+		ret |= 0b00100000
+	}
+	if perms.PlatformSpecific {
+		ret |= 0b01000000
+	}
+	if perms.Runtime {
+		ret |= 0b10000000
+	}
+
+	return ret
+}
+
+func CreateHeader(meta *Metadata) []byte {
+	var header []byte
+
+	if meta.Core {
+		header = []byte("SE! CORE.EXT")
+	} else {
+		header = []byte("SE! EXTENSION")
+
+		header = append(header, append([]byte(meta.Id), 0)...)
+	}
+
+	header = append(header, append([]byte(meta.Name), 0)...)
+	header = append(header, append([]byte(meta.Description), 0)...)
+	header = append(header, ProcessPermissions(meta.Permissions))
+
+	return header
+}
+
 func main() {
 	meta, err := ParseJSON()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("%+v\n", *meta)
+	output := CreateHeader(meta)
 }
