@@ -2,12 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/pflag"
 
 	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/ast"
@@ -33,8 +36,8 @@ type Metadata struct {
 	Permissions Permissions `json:"permissions"`
 }
 
-func ParseJSON() (*Metadata, error) {
-	data, err := os.ReadFile("meta.json")
+func ParseJSON(path string) (*Metadata, error) {
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -200,12 +203,37 @@ func CompileLua(source string) ([]byte, error) {
 }
 
 func main() {
-	meta, err := ParseJSON()
+	sourcePath := pflag.StringP("source", "i", "main.lua", "Path to the Lua source code of the extension.")
+	outputPath := pflag.StringP("output", "o", "", "Path to put the outputed .see or .sece.")
+	metaPath := pflag.StringP("meta", "m", "meta.json", "Path to the JSON file containing metadata.")
+	pflag.Parse()
+
+	if pflag.Lookup("source").Changed {
+		if _, err := os.Stat(*sourcePath); errors.Is(err, os.ErrNotExist) {
+			fmt.Fprintf(os.Stderr, "Error: '%s' does not exist.\n", *sourcePath)
+			pflag.Usage()
+			os.Exit(1)
+		} else if err != nil {
+			panic(err)
+		}
+	}
+
+	if pflag.Lookup("meta").Changed {
+		if _, err := os.Stat(*metaPath); errors.Is(err, os.ErrNotExist) {
+			fmt.Fprintf(os.Stderr, "Error: '%s' does not exist.\n", *metaPath)
+			pflag.Usage()
+			os.Exit(1)
+		} else if err != nil {
+			panic(err)
+		}
+	}
+
+	meta, err := ParseJSON(*metaPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	data, err := os.ReadFile("main.lua")
+	data, err := os.ReadFile(*sourcePath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -223,10 +251,15 @@ func main() {
 	output = append(output, luaBytecode...)
 
 	var fileName string
-	if meta.Core {
-		fileName = meta.Id + ".sece"
+	if pflag.Lookup("output").Changed {
+		fileName = *outputPath
 	} else {
-		fileName = meta.Id + ".see"
+		fileName = meta.Id
+		if meta.Core {
+			fileName += ".sece"
+		} else {
+			fileName += ".see"
+		}
 	}
 
 	if err = os.WriteFile(fileName, output, 0644); err != nil {

@@ -6,7 +6,7 @@ More info coming soon.
 
 - [x] Parse `meta.json`
 - [x] Create Header (part before lua bytecode)
-- [ ] Parse Command Line Arguments
+- [x] Parse Command Line Arguments
 - [x] Compile Lua into bytecode
 - [ ] Generate JS dummy extension from source code
 - [x] Update the formats to add information about the types of blocks
