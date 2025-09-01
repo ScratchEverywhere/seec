@@ -7,7 +7,11 @@ null-terminated.) It's followed by a null-terminated string representing the ID
 of the extension. Then there's a null-terminated string representing the name of
 the extension. There's a null-terminated string representing the description of
 the extension after that. The next byte is used to figure out the permissions
-needed by the extension. Followed by the Lua bytecode of the extension.
+needed by the extension. Following the permissions is any amount of bytes
+representing types of blocks, this section is null-terminated. After the types
+is the corresponding IDs in the same order, each one should be null-terminated
+and there should be the same amount of IDs as types. Followed by the Lua
+bytecode of the extension.
 
 # SECE (Scratch Everywhere! Core Extension)
 
@@ -15,8 +19,11 @@ needed by the extension. Followed by the Lua bytecode of the extension.
 The magic string is followed by a null-terminated string representing the name
 of the extension. The name is followed by a null-terminated representing the
 description of the extension. The next byte is used to figure out the
-permissions needed by the extension. Followed by the Lua bytecode of the
-extension.
+permissions needed by the extension. Following the permissions is any amount of
+bytes representing types of blocks, this section is null-terminated. After the
+types is the corresponding IDs in the same order, each one should be
+null-terminated and there should be the same amount of IDs as types. Followed by
+the Lua bytecode of the extension.
 
 # Permissions
 
@@ -34,3 +41,11 @@ extension.
   (e.g. Amiibo or account information.)
 - 8th bit represents if the extension needs access to the runtime (e.g. sprite
   position, costume, or variables.)
+
+# Block Types
+
+- `0x1`: Command
+- `0x2`: Hat
+- `0x3`: Event
+- `0x4`: Reporter
+- `0x5`: Boolean

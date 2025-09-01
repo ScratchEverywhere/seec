@@ -2,9 +2,16 @@ package main
 
 import (
 	"encoding/json"
-	lua "github.com/yuin/gopher-lua"
+	"fmt"
 	"log"
 	"os"
+	"regexp"
+	"strconv"
+	"strings"
+
+	lua "github.com/yuin/gopher-lua"
+	"github.com/yuin/gopher-lua/ast"
+	"github.com/yuin/gopher-lua/parse"
 )
 
 type Permissions struct {
@@ -70,7 +77,93 @@ func ProcessPermissions(perms Permissions) byte {
 	return ret
 }
 
-func CreateHeader(meta *Metadata) []byte {
+func ProcessBlockInfo(source string) ([]byte, error) {
+	reader := strings.NewReader(source)
+	stmts, err := parse.Parse(reader, "main.lua")
+	if err != nil {
+		return nil, err
+	}
+
+	var types []byte
+	var names []byte
+
+	for _, statement := range stmts {
+		var block string
+
+		assignStmt, ok := statement.(*ast.AssignStmt)
+		if ok {
+			if len(assignStmt.Lhs) != 1 {
+				continue
+			}
+
+			attrGetExpr, ok := assignStmt.Lhs[0].(*ast.AttrGetExpr)
+			if !ok {
+				continue
+			}
+
+			object, ok := attrGetExpr.Object.(*ast.IdentExpr)
+			if !ok || object.Value != "blocks" {
+				continue
+			}
+
+			key, ok := attrGetExpr.Key.(*ast.StringExpr)
+			if !ok {
+				continue
+			}
+
+			block = key.Value
+		} else {
+			funcDefStmt, ok := statement.(*ast.FuncDefStmt)
+			if ok {
+				attrGetExpr, ok := funcDefStmt.Name.Func.(*ast.AttrGetExpr)
+				if !ok {
+					continue
+				}
+
+				object, ok := attrGetExpr.Object.(*ast.IdentExpr)
+				if !ok || object.Value != "blocks" {
+					continue
+				}
+
+				key, ok := attrGetExpr.Key.(*ast.StringExpr)
+				if !ok {
+					continue
+				}
+
+				block = key.Value
+			}
+		}
+
+		if statement.Line()-1 <= 0 {
+			return nil, fmt.Errorf("Invalid Block Function at Line: 1")
+		}
+
+		commentLine := strings.Split(source, "\n")[statement.Line()-2]
+		if match, _ := regexp.MatchString("^-- type: (command|hat|event|reporter|boolean|bool)$", commentLine); !match {
+			return nil, fmt.Errorf("Invalid Block Function at Line: " + strconv.Itoa(statement.Line()))
+		}
+
+		switch commentLine[9:] {
+		case "command":
+			types = append(types, 0x1)
+		case "hat":
+			types = append(types, 0x2)
+		case "event":
+			types = append(types, 0x3)
+		case "reporter":
+			types = append(types, 0x4)
+		case "boolean":
+		case "bool":
+			types = append(types, 0x5)
+		}
+
+		names = append(names, append([]byte(block), 0)...)
+	}
+
+	return append(append(types, 0), names...), nil
+}
+
+func CreateHeader(meta *Metadata, luaSource string) ([]byte, error) {
 	var header []byte
 
 	if meta.Core {
@@ -85,7 +178,13 @@ func CreateHeader(meta *Metadata) []byte {
 	header = append(header, append([]byte(meta.Description), 0)...)
 	header = append(header, ProcessPermissions(meta.Permissions))
 
-	return header
+	blockInfo, err := ProcessBlockInfo(luaSource)
+	if err != nil {
+		return nil, err
+	}
+	header = append(header, blockInfo...)
+
+	return header, nil
 }
 
 func CompileLua(source string) ([]byte, error) {
@@ -106,9 +205,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	output := CreateHeader(meta)
-
 	data, err := os.ReadFile("main.lua")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output, err := CreateHeader(meta, string(data))
 	if err != nil {
 		log.Fatal(err)
 	}
