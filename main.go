@@ -80,15 +80,14 @@ func ProcessPermissions(perms Permissions) byte {
 	return ret
 }
 
-func ProcessBlockInfo(source string) ([]byte, error) {
+func ProcessBlockInfo(source string) (map[string]string, error) {
 	reader := strings.NewReader(source)
 	stmts, err := parse.Parse(reader, "main.lua")
 	if err != nil {
 		return nil, err
 	}
 
-	var types []byte
-	var names []byte
+	blocks := make(map[string]string)
 
 	for _, statement := range stmts {
 		var block string
@@ -146,27 +145,13 @@ func ProcessBlockInfo(source string) ([]byte, error) {
 			return nil, fmt.Errorf("Invalid Block Function at Line: " + strconv.Itoa(statement.Line()))
 		}
 
-		switch commentLine[9:] {
-		case "command":
-			types = append(types, 0x1)
-		case "hat":
-			types = append(types, 0x2)
-		case "event":
-			types = append(types, 0x3)
-		case "reporter":
-			types = append(types, 0x4)
-		case "boolean":
-		case "bool":
-			types = append(types, 0x5)
-		}
-
-		names = append(names, append([]byte(block), 0)...)
+		blocks[block] = commentLine[9:]
 	}
 
-	return append(append(types, 0), names...), nil
+	return blocks, nil
 }
 
-func CreateHeader(meta *Metadata, luaSource string) ([]byte, error) {
+func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	var header []byte
 
 	if meta.Core {
@@ -181,11 +166,28 @@ func CreateHeader(meta *Metadata, luaSource string) ([]byte, error) {
 	header = append(header, append([]byte(meta.Description), 0)...)
 	header = append(header, ProcessPermissions(meta.Permissions))
 
-	blockInfo, err := ProcessBlockInfo(luaSource)
-	if err != nil {
-		return nil, err
+	var blockTypes []byte
+	var blockIds []byte
+
+	for blockId, blockType := range blocks {
+		blockIds = append(blockIds, append([]byte(blockId), 0)...)
+
+		switch blockType {
+		case "command":
+			blockTypes = append(blockTypes, 0x1)
+		case "hat":
+			blockTypes = append(blockTypes, 0x2)
+		case "event":
+			blockTypes = append(blockTypes, 0x3)
+		case "reporter":
+			blockTypes = append(blockTypes, 0x4)
+		case "boolean":
+		case "bool":
+			blockTypes = append(blockTypes, 0x5)
+		}
 	}
-	header = append(header, blockInfo...)
+
+	header = append(header, append(append(blockTypes, 0), blockIds...)...)
 
 	return header, nil
 }
@@ -238,7 +240,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	output, err := CreateHeader(meta, string(data))
+	blocks, err := ProcessBlockInfo(string(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	output, err := CreateHeader(meta, blocks)
 	if err != nil {
 		log.Fatal(err)
 	}
