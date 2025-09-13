@@ -16,11 +16,11 @@ env GOOS=linux GOARCH=riscv64 go build -o bin/seec-linux-riscv64
 
 # Windows
 echo Windows x64
-env GOOS=windows GOARCH=amd64 go build -o bin/seec-windows-x64
+env GOOS=windows GOARCH=amd64 go build -o bin/seec-windows-x64.exe
 echo Windows ARM64
-env GOOS=windows GOARCH=arm64 go build -o bin/seec-windows-arm64
+env GOOS=windows GOARCH=arm64 go build -o bin/seec-windows-arm64.exe
 echo Windows x86
-env GOOS=windows GOARCH=386 go build -o bin/seec-windows-x86
+env GOOS=windows GOARCH=386 go build -o bin/seec-windows-x86.exe
 
 # Darwin (macOS)
 echo Darwin x64
