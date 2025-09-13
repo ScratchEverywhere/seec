@@ -7,11 +7,12 @@ null-terminated.) It's followed by a null-terminated string representing the ID
 of the extension. Then there's a null-terminated string representing the name of
 the extension. There's a null-terminated string representing the description of
 the extension after that. The next byte is used to figure out the permissions
-needed by the extension. Following the permissions is any amount of bytes
-representing types of blocks, this section is null-terminated. After the types
-is the corresponding IDs in the same order, each one should be null-terminated
-and there should be the same amount of IDs as types. Followed by the Lua
-bytecode of the extension.
+needed by the extension. After the permissions is a byte representing supported
+platforms. Following the supported platforms is any amount of bytes representing
+types of blocks, this section is null-terminated. After the types is the
+corresponding IDs in the same order, each one should be null-terminated and
+there should be the same amount of IDs as types. Followed by the Lua bytecode of
+the extension.
 
 # SECE (Scratch Everywhere! Core Extension)
 
@@ -19,9 +20,10 @@ bytecode of the extension.
 The magic string is followed by a null-terminated string representing the name
 of the extension. The name is followed by a null-terminated representing the
 description of the extension. The next byte is used to figure out the
-permissions needed by the extension. Following the permissions is any amount of
-bytes representing types of blocks, this section is null-terminated. After the
-types is the corresponding IDs in the same order, each one should be
+permissions needed by the extension. After the permissions is a byte
+representing supported platforms. Following the supported platforms is any
+amount of bytes representing types of blocks, this section is null-terminated.
+After the types is the corresponding IDs in the same order, each one should be
 null-terminated and there should be the same amount of IDs as types. Followed by
 the Lua bytecode of the extension.
 
@@ -49,3 +51,15 @@ the Lua bytecode of the extension.
 - `0x3`: Event
 - `0x4`: Reporter
 - `0x5`: Boolean
+
+# Supported Platforms Map
+
+Just `&` these together.
+
+- `0b00000001`: 3DS
+- `0b00000010`: Wii U
+- `0b00000100`: Wii
+- `0b00001000`: GameCube
+- `0b00010000`: Switch
+- `0b00100000`: PC
+- `0b01000000`: Vita

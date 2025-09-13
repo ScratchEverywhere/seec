@@ -12,5 +12,6 @@
     "update": false,
     "platform-specific": false,
     "runtime": false
-  }
+  },
+  "platforms": ["wiiu", "wii", "pc", "switch", "gamecube", "3ds", "vita"]
 }

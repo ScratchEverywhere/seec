@@ -34,6 +34,7 @@ type Metadata struct {
 	Name        string      `json:"name"`
 	Description string      `json:"description"`
 	Permissions Permissions `json:"permissions"`
+	Platforms   []string    `json:"platforms"`
 }
 
 func ParseJSON(path string) (*Metadata, error) {
@@ -78,6 +79,44 @@ func ProcessPermissions(perms Permissions) byte {
 	}
 
 	return ret
+}
+
+func ProcessPlatforms(platforms []string) (byte, error) {
+	ret := byte(0)
+
+	for _, platform := range platforms {
+		if platform == "3ds" {
+			ret |= 0b00000001
+			continue
+		}
+		if platform == "wiiu" {
+			ret |= 0b00000010
+			continue
+		}
+		if platform == "wii" {
+			ret |= 0b00000100
+			continue
+		}
+		if platform == "gamecube" {
+			ret |= 0b00001000
+			continue
+		}
+		if platform == "switch" {
+			ret |= 0b00010000
+			continue
+		}
+		if platform == "pc" {
+			ret |= 0b00100000
+			continue
+		}
+		if platform == "vita" {
+			ret |= 0b01000000
+			continue
+		}
+		return 0, fmt.Errorf("Unknown platform: '" + platform + "'")
+	}
+
+	return ret, nil
 }
 
 func ProcessBlockInfo(source string) (map[string]string, error) {
@@ -165,6 +204,12 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	header = append(header, append([]byte(meta.Name), 0)...)
 	header = append(header, append([]byte(meta.Description), 0)...)
 	header = append(header, ProcessPermissions(meta.Permissions))
+
+	platforms, err := ProcessPlatforms(meta.Platforms)
+	if err != nil {
+		return nil, err
+	}
+	header = append(header, platforms)
 
 	var blockTypes []byte
 	var blockIds []byte
