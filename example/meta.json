@@ -3,15 +3,6 @@
   "id": "see-example",
   "name": "SE! Example Extension",
   "description": "This is an example extension for Scratch Everywhere!",
-  "permissions": {
-    "local-fs": false,
-    "root-fs": false,
-    "network": false,
-    "input": false,
-    "render": false,
-    "update": false,
-    "platform-specific": false,
-    "runtime": false
-  },
+  "permissions": [],
   "platforms": ["wiiu", "wii", "pc", "switch", "gamecube", "3ds", "vita"]
 }

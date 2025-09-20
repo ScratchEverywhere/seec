@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -17,24 +19,13 @@ import (
 	"github.com/yuin/gopher-lua/parse"
 )
 
-type Permissions struct {
-	LocalFS          bool `json:"local-fs"`
-	RootFS           bool `json:"root-fs"`
-	Network          bool `json:"network"`
-	Input            bool `json:"input"`
-	Render           bool `json:"render"`
-	Update           bool `json:"update"`
-	PlatformSpecific bool `json:"platform-specific"`
-	Runtime          bool `json:"runtime"`
-}
-
 type Metadata struct {
-	Core        bool        `json:"core"`
-	Id          string      `json:"id,omitempty"`
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	Permissions Permissions `json:"permissions"`
-	Platforms   []string    `json:"platforms"`
+	Core        bool     `json:"core"`
+	Id          string   `json:"id,omitempty"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Permissions []string `json:"permissions"`
+	Platforms   []string `json:"platforms"`
 }
 
 func ParseJSON(path string) (*Metadata, error) {
@@ -50,35 +41,59 @@ func ParseJSON(path string) (*Metadata, error) {
 	return &meta, nil
 }
 
-func ProcessPermissions(perms Permissions) byte {
-	ret := byte(0)
+func ProcessPermissions(perms []string) ([]byte, error) {
+	ret := uint16(0)
 
-	if perms.LocalFS {
-		ret |= 0b00000001
-	}
-	if perms.RootFS {
-		ret |= 0b00000010
-	}
-	if perms.Network {
-		ret |= 0b00000100
-	}
-	if perms.Input {
-		ret |= 0b00001000
-	}
-	if perms.Render {
-		ret |= 0b00010000
-	}
-	if perms.Update {
-		ret |= 0b00100000
-	}
-	if perms.PlatformSpecific {
-		ret |= 0b01000000
-	}
-	if perms.Runtime {
-		ret |= 0b10000000
+	for _, perm := range perms {
+		if perm == "localfs" {
+			ret |= 0b0000000001
+			continue
+		}
+		if perm == "rootfs" {
+			ret |= 0b0000000010
+			continue
+		}
+		if perm == "network" {
+			ret |= 0b0000000100
+			continue
+		}
+		if perm == "input" {
+			ret |= 0b0000001000
+			continue
+		}
+		if perm == "render" {
+			ret |= 0b0000010000
+			continue
+		}
+		if perm == "update" {
+			ret |= 0b0000100000
+			continue
+		}
+		if perm == "platform-specific" {
+			ret |= 0b0001000000
+			continue
+		}
+		if perm == "runtime" {
+			ret |= 0b0010000000
+			continue
+		}
+		if perm == "audio" {
+			ret |= 0b0100000000
+			continue
+		}
+		if perm == "extensions" {
+			ret |= 0b1000000000
+			continue
+		}
+		return nil, fmt.Errorf("Unknown platform: '" + perm + "'")
 	}
 
-	return ret
+	buf := new(bytes.Buffer)
+	if err := binary.Write(buf, binary.BigEndian, ret); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func ProcessPlatforms(platforms []string) (byte, error) {
@@ -203,7 +218,12 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 
 	header = append(header, append([]byte(meta.Name), 0)...)
 	header = append(header, append([]byte(meta.Description), 0)...)
-	header = append(header, ProcessPermissions(meta.Permissions))
+
+	perms, err := ProcessPermissions(meta.Permissions)
+	if err != nil {
+		return nil, err
+	}
+	header = append(header, perms...)
 
 	platforms, err := ProcessPlatforms(meta.Platforms)
 	if err != nil {
