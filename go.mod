@@ -1,4 +1,4 @@
-module github.com/gradylink/seec
+module github.com/ScratchEverywhere/seec
 
 go 1.18
 
