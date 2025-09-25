@@ -206,16 +206,15 @@ func ProcessBlockInfo(source string) (map[string]string, error) {
 }
 
 func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
-	var header []byte
+	header := []byte("SE! EXTENSION")
 
 	if meta.Core {
-		header = []byte("SE! CORE.EXT")
+		header = append(header, 1)
 	} else {
-		header = []byte("SE! EXTENSION")
-
-		header = append(header, append([]byte(meta.Id), 0)...)
+		header = append(header, 0)
 	}
 
+	header = append(header, append([]byte(meta.Id), 0)...)
 	header = append(header, append([]byte(meta.Name), 0)...)
 	header = append(header, append([]byte(meta.Description), 0)...)
 
