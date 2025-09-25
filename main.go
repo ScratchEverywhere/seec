@@ -325,12 +325,7 @@ func main() {
 	if pflag.Lookup("output").Changed {
 		fileName = *outputPath
 	} else {
-		fileName = meta.Id
-		if meta.Core {
-			fileName += ".sece"
-		} else {
-			fileName += ".see"
-		}
+		fileName = meta.Id + ".see"
 	}
 
 	if err = os.WriteFile(fileName, output, 0644); err != nil {
