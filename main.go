@@ -26,6 +26,7 @@ type Metadata struct {
 	Description string   `json:"description"`
 	Permissions []string `json:"permissions"`
 	Platforms   []string `json:"platforms"`
+	MinAPI      string   `json:"minAPI,omitempty"`
 }
 
 func ParseJSON(path string) (*Metadata, error) {
@@ -37,6 +38,12 @@ func ParseJSON(path string) (*Metadata, error) {
 	var meta Metadata
 	if err = json.Unmarshal(data, &meta); err != nil {
 		return nil, err
+	}
+	if meta.MinAPI == "" {
+		meta.MinAPI = "0.0" // Update this to whatever the newest API version is.
+	} else if match, _ := regexp.MatchString("^\\d+\\.\\d+$", meta.MinAPI); !match {
+		fmt.Println("[WARNING] Invalid API Version: '" + meta.MinAPI + "', using '0.0'.")
+		meta.MinAPI = "0.0"
 	}
 	return &meta, nil
 }
@@ -213,6 +220,18 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	} else {
 		header = append(header, 0)
 	}
+
+	header = append(header, 0) // Update as file format version changes
+	majorVersion, err := strconv.Atoi(strings.Split(meta.MinAPI, ".")[0])
+	if err != nil {
+		return nil, err
+	}
+	header = append(header, byte(majorVersion))
+	minorVersion, err := strconv.Atoi(strings.Split(meta.MinAPI, ".")[1])
+	if err != nil {
+		return nil, err
+	}
+	header = append(header, byte(minorVersion))
 
 	header = append(header, append([]byte(meta.Id), 0)...)
 	header = append(header, append([]byte(meta.Name), 0)...)
