@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,14 +21,26 @@ import (
 	"github.com/yuin/gopher-lua/parse"
 )
 
+type Setting struct {
+	Id      string  `json:"id"`
+	Name    string  `json:"name"`
+	Type    string  `json:"type"`
+	Default any     `json:"default"`
+	Min     float32 `json:"min,omitempty"`
+	Max     float32 `json:"max,omitempty"`
+	Snap    float32 `json:"snap,omitempty"`
+	Prompt  string  `json:"prompt,omitempty"`
+}
+
 type Metadata struct {
-	Core        bool     `json:"core"`
-	Id          string   `json:"id,omitempty"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Permissions []string `json:"permissions"`
-	Platforms   []string `json:"platforms"`
-	MinAPI      string   `json:"minAPI,omitempty"`
+	Core        bool      `json:"core"`
+	Id          string    `json:"id,omitempty"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Permissions []string  `json:"permissions"`
+	Platforms   []string  `json:"platforms"`
+	MinAPI      string    `json:"minAPI,omitempty"`
+	Settings    []Setting `json:"settings,omitempty"`
 }
 
 func ParseJSON(path string) (*Metadata, error) {
@@ -249,6 +263,53 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	}
 	header = append(header, platforms)
 
+	for _, setting := range meta.Settings {
+		var defaultValue []byte = nil
+		var data []byte = nil
+
+		switch setting.Type {
+		case "text":
+			header = append(header, 0x63)
+			data = append([]byte(setting.Prompt), 0)
+			if _, ok := setting.Default.(string); ok {
+				header = append(header, append([]byte(setting.Default.(string)), 0)...)
+			}
+			return nil, fmt.Errorf("Invalid default value for text")
+		case "slider":
+			header = append(header, 0x6e)
+			data = make([]byte, 12)
+			binary.BigEndian.PutUint32(data, math.Float32bits(float32(setting.Min)))
+			binary.BigEndian.PutUint32(data, math.Float32bits(float32(setting.Max)))
+			binary.BigEndian.PutUint32(data, math.Float32bits(float32(setting.Snap)))
+			if _, ok := setting.Default.(float64); ok {
+				defaultValue = make([]byte, 4)
+				binary.BigEndian.PutUint32(defaultValue, math.Float32bits(float32(setting.Default.(float64))))
+				break
+			}
+			return nil, fmt.Errorf("Invalid default value for slider")
+		case "toggle":
+			header = append(header, 0x12)
+			if _, ok := setting.Default.(bool); ok {
+				if setting.Default.(bool) {
+					defaultValue = []byte{1}
+					break
+				}
+				defaultValue = []byte{0}
+				break
+			}
+			return nil, fmt.Errorf("Invalid default value for toggle")
+		default:
+			return nil, fmt.Errorf("Unknown setting type: '" + setting.Type + "'")
+		}
+
+		header = append(header, append([]byte(setting.Id), 0)...)
+		header = append(header, append([]byte(setting.Name), 0)...)
+		header = append(header, defaultValue...)
+		if data != nil {
+			header = append(header, data...)
+		}
+	}
+
 	var blockTypes []byte
 	var blockIds []byte
 
@@ -267,6 +328,8 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 		case "boolean":
 		case "bool":
 			blockTypes = append(blockTypes, 0x5)
+		default:
+			return nil, fmt.Errorf("Unknown block type: '" + blockType + "'")
 		}
 	}
 
