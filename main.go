@@ -9,13 +9,13 @@ import (
 	"log"
 	"math"
 	"os"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/pflag"
 
-	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/ast"
 	"github.com/yuin/gopher-lua/parse"
 )
@@ -338,15 +338,25 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 }
 
 func CompileLua(source string) ([]byte, error) {
-	L := lua.NewState()
-	defer L.Close()
-
-	lfunc, err := L.LoadString(source)
+	f, err := os.CreateTemp("", "*.luac")
 	if err != nil {
 		return nil, err
 	}
+	f.Close()
 
-	return DumpLua(lfunc.Proto), nil
+	cmd := exec.Command("luac5.1", "-o", f.Name(), "-")
+	cmd.Stdin = strings.NewReader(source)
+	stdout, err := cmd.Output()
+	if err != nil {
+		fmt.Println(string(stdout))
+		return nil, err
+	}
+
+	bytecode, err := os.ReadFile(f.Name())
+	if err != nil {
+		return nil, err
+	}
+	return bytecode, nil
 }
 
 func main() {
