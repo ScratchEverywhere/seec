@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Scratch Everywhere! Custom Extension Metadata",
+  "description": "Schema for the meta.json file of a Scratch Everywhere! custom extension.",
+  "type": "object",
+  "properties": {
+    "core": {
+      "description": "Indicates if the extension shoule be considered a core extension.",
+      "type": "boolean"
+    },
+    "id": {
+      "description": "The ID of the custom extension, should match the one in TurboWarp.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The human-readable name of the custom extension.",
+      "type": "string"
+    },
+    "description": {
+      "description": "A brief summary of what the custom extension does.",
+      "type": "string"
+    },
+    "permissions": {
+      "description": "A list of permissions the custom extension requires to function.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "localfs",
+          "rootfs",
+          "network",
+          "input",
+          "render",
+          "update",
+          "platform-specific",
+          "runtime",
+          "audio",
+          "extensions"
+        ]
+      }
+    },
+    "platforms": {
+      "description": "A list of platforms this custom extension is compatible with.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "3ds",
+          "wiiu",
+          "wii",
+          "gamecube",
+          "switch",
+          "pc",
+          "vita"
+        ]
+      }
+    },
+    "minAPI": {
+      "description": "The minimum required API version in 'major.minor' format.",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "settings": {
+      "description": "An array of user-configurable settings for the custom extension.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/setting"
+      }
+    }
+  },
+  "required": [
+    "core",
+    "id",
+    "name",
+    "description",
+    "permissions",
+    "platforms"
+  ],
+  "definitions": {
+    "setting": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The ID of the setting.",
+          "type": "string"
+        },
+        "name": {
+          "description": "The display name for the setting.",
+          "type": "string"
+        },
+        "type": {
+          "description": "The type of UI control for this setting.",
+          "type": "string",
+          "enum": ["text", "slider", "toggle"]
+        },
+        "default": {
+          "description": "The default value for the setting."
+        },
+        "min": {
+          "description": "The minimum value for the slider.",
+          "type": "number"
+        },
+        "max": {
+          "description": "The maximum value for the slider.",
+          "type": "number"
+        },
+        "snap": {
+          "description": "The increment value for the slider.",
+          "type": "number"
+        },
+        "prompt": {
+          "description": "The prompt text for the setting.",
+          "type": "string"
+        }
+      },
+      "required": ["id", "name", "type", "default"],
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "slider" } }
+          },
+          "then": {
+            "properties": { "default": { "type": "number" } },
+            "required": ["min", "max", "snap"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "toggle" } }
+          },
+          "then": {
+            "properties": { "default": { "type": "boolean" } }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "text" } }
+          },
+          "then": {
+            "properties": { "default": { "type": "string" } },
+            "required": ["prompt"]
+          }
+        }
+      ]
+    }
+  }
+}
