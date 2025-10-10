@@ -23,6 +23,7 @@
     "permissions": {
       "description": "A list of permissions the custom extension requires to function.",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "enum": [
@@ -42,6 +43,7 @@
     "platforms": {
       "description": "A list of platforms this custom extension is compatible with.",
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "enum": [
