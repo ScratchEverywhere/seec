@@ -325,8 +325,7 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 			blockTypes = append(blockTypes, 0x3)
 		case "reporter":
 			blockTypes = append(blockTypes, 0x4)
-		case "boolean":
-		case "bool":
+		case "boolean", "bool":
 			blockTypes = append(blockTypes, 0x5)
 		default:
 			return nil, fmt.Errorf("Unknown block type: '" + blockType + "'")
