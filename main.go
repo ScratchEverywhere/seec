@@ -262,6 +262,7 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	}
 	header = append(header, platforms)
 
+	header = append(header, byte(len(meta.Settings)))
 	for _, setting := range meta.Settings {
 		var defaultValue []byte = nil
 		var data []byte = nil
