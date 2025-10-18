@@ -166,8 +166,13 @@ func ProcessBlockInfo(source string) (map[string]string, error) {
 	for _, statement := range stmts {
 		var block string
 
-		assignStmt, ok := statement.(*ast.AssignStmt)
-		if ok {
+		funcDefStmt, ok := statement.(*ast.FuncDefStmt)
+		if !ok {
+			assignStmt, ok := statement.(*ast.AssignStmt)
+			if !ok {
+				continue
+			}
+
 			if len(assignStmt.Lhs) != 1 {
 				continue
 			}
@@ -189,25 +194,22 @@ func ProcessBlockInfo(source string) (map[string]string, error) {
 
 			block = key.Value
 		} else {
-			funcDefStmt, ok := statement.(*ast.FuncDefStmt)
-			if ok {
-				attrGetExpr, ok := funcDefStmt.Name.Func.(*ast.AttrGetExpr)
-				if !ok {
-					continue
-				}
-
-				object, ok := attrGetExpr.Object.(*ast.IdentExpr)
-				if !ok || object.Value != "blocks" {
-					continue
-				}
-
-				key, ok := attrGetExpr.Key.(*ast.StringExpr)
-				if !ok {
-					continue
-				}
-
-				block = key.Value
+			attrGetExpr, ok := funcDefStmt.Name.Func.(*ast.AttrGetExpr)
+			if !ok {
+				continue
 			}
+
+			object, ok := attrGetExpr.Object.(*ast.IdentExpr)
+			if !ok || object.Value != "blocks" {
+				continue
+			}
+
+			key, ok := attrGetExpr.Key.(*ast.StringExpr)
+			if !ok {
+				continue
+			}
+
+			block = key.Value
 		}
 
 		if statement.Line()-1 <= 0 {
