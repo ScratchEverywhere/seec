@@ -13,7 +13,7 @@ Usage of seec:
 
 ## File Format
 
-See [FORMAT.md](FORMAT.md) for information about `.see` and `.sece` files.
+See [the documentation](https://scratcheverywhere.github.io/extensions/format).
 
 ## Installation
 
