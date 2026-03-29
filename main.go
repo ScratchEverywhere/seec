@@ -116,42 +116,67 @@ func ProcessPermissions(perms []string) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func ProcessPlatforms(platforms []string) (byte, error) {
-	ret := byte(0)
+func ProcessPlatforms(platforms []string) ([]byte, error) {
+	ret := uint16(0)
 
 	for _, platform := range platforms {
 		if platform == "3ds" {
-			ret |= 0b00000001
+			ret |= 0b000000000001
 			continue
 		}
 		if platform == "wiiu" {
-			ret |= 0b00000010
+			ret |= 0b000000000010
 			continue
 		}
 		if platform == "wii" {
-			ret |= 0b00000100
+			ret |= 0b000000000100
 			continue
 		}
 		if platform == "gamecube" {
-			ret |= 0b00001000
+			ret |= 0b000000001000
 			continue
 		}
 		if platform == "switch" {
-			ret |= 0b00010000
+			ret |= 0b000000010000
 			continue
 		}
 		if platform == "pc" {
-			ret |= 0b00100000
+			ret |= 0b000000100000
 			continue
 		}
 		if platform == "vita" {
-			ret |= 0b01000000
+			ret |= 0b000001000000
 			continue
 		}
-		return 0, fmt.Errorf("Unknown platform: '" + platform + "'")
+		if platform == "nds" {
+			ret |= 0b000010000000
+			continue
+		}
+		if platform == "ps4" {
+			ret |= 0b000100000000
+			continue
+		}
+		if platform == "psp" {
+			ret |= 0b001000000000
+			continue
+		}
+		if platform == "webos" {
+			ret |= 0b010000000000
+			continue
+		}
+		if platform == "wasm" {
+			ret |= 0b100000000000
+			continue
+		}
+		return nil, fmt.Errorf("Unknown platform: '" + platform + "'")
 	}
 
-	return ret, nil
+	buf := new(bytes.Buffer)
+	if err := binary.Write(buf, binary.BigEndian, ret); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
 }
 
 func ProcessBlockInfo(source string) (map[string]string, error) {
@@ -262,7 +287,7 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	header = append(header, platforms)
+	header = append(header, platforms...)
 
 	header = append(header, byte(len(meta.Settings)))
 	for _, setting := range meta.Settings {
