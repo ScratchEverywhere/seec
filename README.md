@@ -21,11 +21,3 @@ See [the documentation](https://scratcheverywhere.github.io/extensions/format).
 > seec is on the AUR as the `seec` package.
 
 Simply download the static executable from the releases page.
-
-## Todo List
-
-- [x] Parse `meta.json`
-- [x] Create Header (part before lua bytecode)
-- [x] Parse Command Line Arguments
-- [x] Compile Lua into bytecode
-- [x] Update the formats to add information about the types of blocks
