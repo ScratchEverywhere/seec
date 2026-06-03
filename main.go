@@ -52,11 +52,13 @@ func ParseJSON(path string) (*Metadata, error) {
 	if err = json.Unmarshal(data, &meta); err != nil {
 		return nil, err
 	}
+
+	defaultApi := "0.1"
 	if meta.MinAPI == "" {
-		meta.MinAPI = "0.0" // Update this to whatever the newest API version is.
+		meta.MinAPI = defaultApi
 	} else if match, _ := regexp.MatchString("^\\d+\\.\\d+$", meta.MinAPI); !match {
-		fmt.Println("[WARNING] Invalid API Version: '" + meta.MinAPI + "', using '0.0'.")
-		meta.MinAPI = "0.0"
+		fmt.Println("[WARNING] Invalid API Version: '" + meta.MinAPI + "', using default.")
+		meta.MinAPI = defaultApi
 	}
 	return &meta, nil
 }
