@@ -37,7 +37,7 @@ type Metadata struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Permissions []string  `json:"permissions"`
-	Platforms   []string  `json:"platforms"`
+	Platforms   []string  `json:"platforms,omitempty"`
 	MinAPI      string    `json:"minAPI,omitempty"`
 	Settings    []Setting `json:"settings,omitempty"`
 }
@@ -119,6 +119,15 @@ func ProcessPermissions(perms []string) ([]byte, error) {
 }
 
 func ProcessPlatforms(platforms []string) ([]byte, error) {
+	if len(platforms) < 1 {
+		ret := uint16(0b111111111111)
+		buf := new(bytes.Buffer)
+		if err := binary.Write(buf, binary.BigEndian, ret); err != nil {
+			return nil, err
+		}
+		return buf.Bytes(), nil
+	}
+
 	ret := uint16(0)
 
 	for _, platform := range platforms {
