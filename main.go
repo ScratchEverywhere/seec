@@ -265,12 +265,6 @@ func ProcessBlockInfo(source string) (map[string]string, error) {
 func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	header := []byte("SE! EXTENSION")
 
-	if meta.Core {
-		header = append(header, 1)
-	} else {
-		header = append(header, 0)
-	}
-
 	header = append(header, 0) // Update as file format version changes
 	majorVersion, err := strconv.Atoi(strings.Split(meta.MinAPI, ".")[0])
 	if err != nil {
@@ -282,6 +276,12 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 		return nil, err
 	}
 	header = append(header, byte(minorVersion))
+
+	if meta.Core {
+		header = append(header, 1)
+	} else {
+		header = append(header, 0)
+	}
 
 	header = append(header, append([]byte(meta.Id), 0)...)
 	header = append(header, append([]byte(meta.Name), 0)...)
