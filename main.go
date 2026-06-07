@@ -9,7 +9,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -375,26 +374,24 @@ func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	return header, nil
 }
 
-func CompileLua(source string) ([]byte, error) {
-	f, err := os.CreateTemp("", "*.luac")
-	if err != nil {
-		return nil, err
-	}
-	f.Close()
+func MinifyLua(input []byte) []byte {
+	src := string(input)
 
-	cmd := exec.Command("luac5.1", "-o", f.Name(), "-")
-	cmd.Stdin = strings.NewReader(source)
-	stdout, err := cmd.Output()
-	if err != nil {
-		fmt.Println(string(stdout))
-		return nil, err
-	}
+	commentRegex := regexp.MustCompile(`--[^\n]*`)
+	src = commentRegex.ReplaceAllString(src, "")
 
-	bytecode, err := os.ReadFile(f.Name())
-	if err != nil {
-		return nil, err
-	}
-	return bytecode, nil
+	spacesRegex := regexp.MustCompile(`[ \t]+`)
+	src = spacesRegex.ReplaceAllString(src, " ")
+
+	punctRegex := regexp.MustCompile(`\s*([=+\-*/%^#.,{}()\[\]<>:])\s*`)
+	src = punctRegex.ReplaceAllString(src, "$1")
+
+	src = strings.TrimSpace(src)
+
+	newlineRegex := regexp.MustCompile(`\n+`)
+	src = newlineRegex.ReplaceAllString(src, "\n")
+
+	return []byte(src)
 }
 
 func main() {
@@ -443,12 +440,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	luaBytecode, err := CompileLua(string(data))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	output = append(output, luaBytecode...)
+	output = append(output, MinifyLua(data)...)
 
 	var fileName string
 	if pflag.Lookup("output").Changed {
