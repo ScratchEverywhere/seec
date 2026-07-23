@@ -27,3 +27,8 @@ echo Darwin x64
 env GOOS=darwin GOARCH=amd64 go build -o bin/seec-darwin-x64
 echo Darwin ARM64
 env GOOS=darwin GOARCH=arm64 go build -o bin/seec-darwin-arm64
+# FreeBSD
+echo FreeBSD x64
+env GOOS=freebsd GOARCH=amd64 go build -o bin/seec-freebsd-x64
+echo FreeBSD arm64
+env GOOS=freebsd GOARCH=arm64 go build -o bin/seec-freebsd-arm64
