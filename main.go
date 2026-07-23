@@ -178,6 +178,14 @@ func ProcessPlatforms(platforms []string) ([]byte, error) {
 			ret |= 0b100000000000
 			continue
 		}
+		if platform == "n64" {
+			ret |= 0b000000000100
+			continue
+		}
+		if platform == "dreamcast" {
+			ret |= 0b000000000010
+			continue
+		}
 		return nil, fmt.Errorf("Unknown platform: '" + platform + "'")
 	}
 
