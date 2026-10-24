@@ -131,51 +131,55 @@ func ProcessPlatforms(platforms []string) ([]byte, error) {
 
 	for _, platform := range platforms {
 		if platform == "3ds" {
-			ret |= 0b000000000001
+			ret |= 0b0000000000001
 			continue
 		}
 		if platform == "wiiu" {
-			ret |= 0b000000000010
+			ret |= 0b0000000000010
 			continue
 		}
 		if platform == "wii" {
-			ret |= 0b000000000100
+			ret |= 0b0000000000100
 			continue
 		}
 		if platform == "gamecube" {
-			ret |= 0b000000001000
+			ret |= 0b0000000001000
 			continue
 		}
 		if platform == "switch" {
-			ret |= 0b000000010000
+			ret |= 0b0000000010000
 			continue
 		}
 		if platform == "pc" {
-			ret |= 0b000000100000
+			ret |= 0b0000000100000
 			continue
 		}
 		if platform == "vita" {
-			ret |= 0b000001000000
+			ret |= 0b0000001000000
 			continue
 		}
 		if platform == "nds" {
-			ret |= 0b000010000000
+			ret |= 0b0000010000000
 			continue
 		}
 		if platform == "ps4" {
-			ret |= 0b000100000000
+			ret |= 0b0000100000000
 			continue
 		}
 		if platform == "psp" {
-			ret |= 0b001000000000
+			ret |= 0b0001000000000
 			continue
 		}
 		if platform == "webos" {
-			ret |= 0b010000000000
+			ret |= 0b0010000000000
 			continue
 		}
 		if platform == "wasm" {
-			ret |= 0b100000000000
+			ret |= 0b0100000000000
+			continue
+		}
+		if platform == "xbox" {
+			ret |= 0b1000000000000
 			continue
 		}
 		return nil, fmt.Errorf("Unknown platform: '" + platform + "'")
@@ -265,7 +269,7 @@ func ProcessBlockInfo(source string) (map[string]string, error) {
 func CreateHeader(meta *Metadata, blocks map[string]string) ([]byte, error) {
 	header := []byte("SE! EXTENSION")
 
-	header = append(header, 0) // Update as file format version changes
+	header = append(header, 1) // Update as file format version changes
 	majorVersion, err := strconv.Atoi(strings.Split(meta.MinAPI, ".")[0])
 	if err != nil {
 		return nil, err
